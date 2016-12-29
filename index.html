@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <title>Google Maps Sandbox</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="options-box">
+        <h1>Find a Chicago Music Venue</h1>
+        <div>
+          <input id="show-listings" type="button" value="Show Listings">
+          <input id="hide-listings" type="button" value="Hide Listings">
+        </div>
+      </div>
+    </div>
+    <div id="map"></div>
+    <script src="js/main.js"></script>
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD12rqNI0xx-o1LXAxtJ-X-Es30h_oS6j4&v=3&libraries=geometry&callback=initMap">
+    </script>
+
+  </body>
+</html>
