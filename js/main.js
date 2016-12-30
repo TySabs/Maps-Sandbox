@@ -170,22 +170,24 @@ function populateInfoWindow(marker, infoWindow) {
   if (infoWindow.marker != marker) {
     infoWindow.setContent('');
     infoWindow.marker = marker;
-//    infoWindow.setContent('<div>' + marker.title + '</div>');
-//    infoWindow.open(map, marker);
+
     // Make sure marker property is cleared if the infoWindow is closed
     infoWindow.addListener('closeclick', function() {
       infoWindow.marker = null;
     });
-    var streetViewService = new google.maps.StreetViewService();
-    var radius = 50;
+
     // If status is OK, which means pano was found, compute the position of streetView
     // image, then calculate the heading, then get a panorama from that and
     // set the options
     function getStreetView(data, status) {
       if (status == google.maps.StreetViewStatus.OK) {
         var nearStreetViewLocation = data.location.latLng;
+
+        // heading variable controls the initial pitch of streetview
         var heading = google.maps.geometry.spherical.computeHeading(nearStreetViewLocation, marker.position);
-        infoWindow.setContent('<div>' + marker.title + '</div><div id="pano"></div>');
+        infoWindow.setContent('<div class="marker-title">' + marker.title + '</div><div id="pano"></div>');
+
+        // Set the properties of streetview
         var panoramaOptions = {
           position: nearStreetViewLocation,
           pov: {
@@ -193,13 +195,15 @@ function populateInfoWindow(marker, infoWindow) {
             pitch: 30
           }
         };
+        // Create the streetview panorama that appears in the infoWindow
         var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
-        console.log("StreetView Status was OK");
       } else {
         infoWindow.setContent('<div>' + marker.title + '</div>' + '<div>No Street View Found</div>');
-        console.log("Streetview Status was not ok");
       }
     }
+
+    var streetViewService = new google.maps.StreetViewService();
+    var radius = 50;
     // Use streetview service to get closest streetview image within
     // 50 meters of the markers position
     streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
@@ -228,7 +232,7 @@ function hideListings() {
 // This function takes in a color, and then creates a new marker icon of that color
 function makeMarkerIcon(markerColor) {
   var markerImage = new google.maps.MarkerImage(
-    'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
+    'https://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
     '|40|_|%E2%80%A2',
     new google.maps.Size(21, 34),
     new google.maps.Point(0, 0),
