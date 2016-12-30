@@ -96,27 +96,28 @@ function initMap() {
     }];
   // Constructor creates a new map - only center and zoom are required.
   map = new google.maps.Map(document.getElementById('map'), {
-    center: {lat: 41.8937663, lng: -87.617595},
-    zoom: 13,
+    center: {lat: 41.8789, lng: -87.6359},
+    zoom: 12,
     // Set styles for map
     styles: paleDawnStyles,
     // Disable ability to switch between map types
     mapTypeControl: false
   });
 
-  // musicVenues holds the music venue locations for all our markers
-  var musicVenues = [
-    {title: 'Aragon Ballroom', location: {lat: 41.9694, lng: -87.6580}},
-    {title: 'Kingston Mines', location: {lat: 41.9286, lng: -87.6490}},
-    {title: 'Sound Bar', location: {lat: 41.8934, lng: -87.6354}},
+  // landmarks holds the music venue locations for all our markers
+  var landmarks = [
+    {title: 'Cloud Gate (The Bean)', location: {lat: 41.8827, lng: -87.6233}},
+    {title: 'Buckingham Fountain', location: {lat: 41.8758, lng: -87.6189}},
+    {title: 'Field Museum of Natural History', location: {lat: 41.8663, lng: -87.6170}},
     {title: 'Navy Pier', location: {lat: 41.8917, lng: -87.6063}},
-    {title: 'Chicago Symphony Center', location: {lat: 41.8790, lng: -87.6251}},
-    {title: 'Buddy Guy\'s Legends', location: {lat: 41.8730, lng: -87.6262}},
+    {title: 'Art Institute of Chicago', location: {lat: 41.8796, lng: -87.6237}},
+    {title: 'Shedd Aquarium', location: {lat: 41.8676, lng: -87.6140}},
+    {title: 'Willis Tower (Sears Tower)', location: {lat: 41.8789, lng: -87.6359}},
+    {title: 'Wrigley Field', location: {lat: 41.9484, lng: -87.6553}},
+    {title: 'Soldier Field', location: {lat: 41.8623, lng: -87.6167}},
     {title: 'United Center', location: {lat: 41.8807, lng: -87.6742}},
-    {title: 'Concord Music Hall', location: {lat: 41.9187, lng: -87.6899}},
-    {title: 'Double Door', location: {lat: 41.9098, lng: -87.6773}},
-    {title: 'Metro', location: {lat: 41.9498, lng: -87.6588}},
-    {title: 'House of Blues', location: {lat: 41.8882, lng: -87.6291}}
+    {title: 'Guaranteed Rate Field (Comiskey)', location: {lat: 41.8299, lng: -87.6338}},
+    {title: 'Lincoln Park Zoo', location: {lat: 41.9211, lng: -87.6340}}
   ];
 
   var largeInfoWindow = new google.maps.InfoWindow();
@@ -127,11 +128,11 @@ function initMap() {
   // Create a highlighted marker for when use mouses over (yellow)
   var highlightedIcon = makeMarkerIcon('FFFF24');
 
-  // Create a list of markers based off musicVenues array
-  for (var i = 0; i < musicVenues.length; i++) {
-    // Get the position from musicVenues array
-    var position = musicVenues[i].location;
-    var title = musicVenues[i].title;
+  // Create a list of markers based off landmarks array
+  for (var i = 0; i < landmarks.length; i++) {
+    // Get the position from landmarks array
+    var position = landmarks[i].location;
+    var title = landmarks[i].title;
     // Create a marker for each location, then push markers into an array
     var marker = new google.maps.Marker({
       map: map,
