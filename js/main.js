@@ -1,5 +1,8 @@
 var map;
+// Create an array to hold markers
 var markers = [];
+// Initialize polygon to be used by drawingManager
+var polygon = null;
 
 function initMap() {
   /* Pale Dawn Styles url: https://snazzymaps.com/style/1/pale-dawn */
@@ -122,6 +125,18 @@ function initMap() {
 
   var largeInfoWindow = new google.maps.InfoWindow();
 
+  // Initialize the drawing manager
+  var drawingManager = new google.maps.drawing.DrawingManager({
+    drawingMode: google.maps.drawing.OverlayType.POLYGON,
+    drawingControl: true,
+    drawingControlOptions: {
+      position: google.maps.ControlPosition.TOP_LEFT,
+      drawingModes: [
+        google.maps.drawing.OverlayType.POLYGON
+      ]
+    }
+  });
+
   // Create default icon (red)
   var defaultIcon = makeMarkerIcon('FF0000');
 
@@ -157,9 +172,39 @@ function initMap() {
       this.setIcon(defaultIcon);
     });
   }
+  // Create click events to hide/show landmarks
   document.getElementById('show-landmarks').addEventListener('click', showLandmarks);
   document.getElementById('hide-landmarks').addEventListener('click', hideLandmarks);
+
+  // Create click event to turn on drawing tools
+  document.getElementById('toggle-drawing').addEventListener('click', function() {
+    toggleDrawing(drawingManager);
+  });
+
+  drawingManager.addListener('overlaycomplete', function(event) {
+    // First, check if there is an existing polygon
+    // If there is, get rid of it and remove the markers
+    if (polygon) {
+      polygon.setMap(null);
+      hideLandmarks();
+    }
+    // Turn off drawing mode
+    drawingManager.setDrawingMode(null);
+    // Create a new editable polygon from the overlay
+    polygon = event.overlay;
+    polygon.setEditable(true);
+    // Search within the polygon
+    searchWithinPolygon();
+    // Make sure the search is re-done if the poly is changed
+    polygon.getPath().addListener('set_at', searchWithinPolygon);
+    polygon.getPath().addListener('insert_at', searchWithinPolygon);
+  });
 } // end initMap()
+
+// Add an event listener so that the polygon is captured, call the
+// searchWithinPolygon function. This will show the markers in the polygon,
+// and hide any outside of it
+
 
 // This function populates the infoWindow when the marker is clicked
 // Only allow one infoWindow which will open at the clicked marker,
@@ -238,4 +283,28 @@ function makeMarkerIcon(markerColor) {
     new google.maps.Point(10, 34),
     new google.maps.Size(21,34));
   return markerImage;
+}
+
+// Turn on and off drawing mode when user clicks drawing mode button
+function toggleDrawing(drawingManager) {
+  if (drawingManager.map) {
+    drawingManager.setMap(null);
+    // In case the user drew anything, get rid of polygon
+    if (polygon !== null) {
+      polygon.setMap(null);
+    }
+  } else {
+    drawingManager.setMap(map);
+  }
+}
+
+// Show all markers within polygon and hide all other markers
+function searchWithinPolygon() {
+  for (var i = 0; i < markers.length; i++) {
+    if (google.maps.geometry.poly.containsLocation(markers[i].position, polygon)) {
+      markers[i].setMap(map);
+    } else {
+      markers[i].setMap(null);
+    }
+  }
 }

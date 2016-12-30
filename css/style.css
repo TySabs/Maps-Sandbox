@@ -59,3 +59,8 @@ h1 {
 .text {
   font-size: 12px;
 }
+
+#toggle-drawing {
+  width: 48%;
+  margin-left: 10px;
+}
