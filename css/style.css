@@ -58,9 +58,18 @@ h1 {
 
 .text {
   font-size: 12px;
+  margin-bottom: 0;
 }
 
 #toggle-drawing {
   width: 48%;
   margin-left: 10px;
+}
+
+#zoom-to-area-text {
+  width: 70%;
+}
+
+#zoom-to-area {
+  width: 24%;
 }
