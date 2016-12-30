@@ -135,7 +135,6 @@ function initMap() {
     var title = landmarks[i].title;
     // Create a marker for each location, then push markers into an array
     var marker = new google.maps.Marker({
-      map: map,
       position: position,
       title: title,
       animation: google.maps.Animation.DROP,
@@ -158,8 +157,8 @@ function initMap() {
       this.setIcon(defaultIcon);
     });
   }
-  document.getElementById('show-listings').addEventListener('click', showListings);
-  document.getElementById('hide-listings').addEventListener('click', hideListings);
+  document.getElementById('show-landmarks').addEventListener('click', showLandmarks);
+  document.getElementById('hide-landmarks').addEventListener('click', hideLandmarks);
 } // end initMap()
 
 // This function populates the infoWindow when the marker is clicked
@@ -212,7 +211,7 @@ function populateInfoWindow(marker, infoWindow) {
   }
 }
 
-function showListings() {
+function showLandmarks() {
   var bounds = new google.maps.LatLngBounds();
   // Extend the boundaries of the map for each marker and display the marker
   for (var i = 0; i < markers.length; i++) {
@@ -223,7 +222,7 @@ function showListings() {
 }
 
 // Hide all the listings
-function hideListings() {
+function hideLandmarks() {
   for (var i = 0; i < markers.length; i++) {
     markers[i].setMap(null);
   }

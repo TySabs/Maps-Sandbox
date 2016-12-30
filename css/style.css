@@ -21,16 +21,9 @@ h1 {
   text-align: center;
 }
 
-#hide-listings,
-#show-listings {
+#hide-landmarks,
+#show-landmarks {
   width: 48%;
-}
-
-hr {
-  background: #D0D7D9;
-  height: 1px;
-  margin: 20px 0 20px 0;
-  border: none;
 }
 
 #map {
