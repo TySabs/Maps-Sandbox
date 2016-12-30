@@ -2,7 +2,7 @@
 
 ## Getting Started
 * To view offline ```git clone https://github.com/TySabs/Music-Map.git``` and then open up ```index.html``` in a browser
-* Online Link: [Chicago Landmarks](https://tysabs.github.io/Music-Map/)
+* Online Link: [Chicago Landmarks](https://tysabs.github.io/Maps-Sandbox/)
 
 ## Purpose of this Project
 * The main goal of this project was to learn more about Google Maps APIs
