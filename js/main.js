@@ -190,6 +190,10 @@ function initMap() {
     zoomToArea();
   });
 
+  document.getElementById('search-within-time').addEventListener('click', function() {
+    searchWithinTime();
+  });
+
   drawingManager.addListener('overlaycomplete', function(event) {
     // First, check if there is an existing polygon
     // If there is, get rid of it and remove the markers
@@ -245,7 +249,7 @@ function populateInfoWindow(marker, infoWindow) {
           position: nearStreetViewLocation,
           pov: {
             heading: heading,
-            pitch: 30
+            pitch: 10
           }
         };
         // Create the streetview panorama that appears in the infoWindow
@@ -343,5 +347,85 @@ function zoomToArea() {
         }
       });
   }
+}
 
+// Allow the user to input a desired travel time, in minutes, and a travel mode,
+// and a location - and only show the landmarks that are within that travel time
+// (via that travel mode) of the location
+function searchWithinTime() {
+  // Initialize the distance matrix service
+  var distanceMatrixService = new google.maps.DistanceMatrixService;
+  var address = document.getElementById('search-within-time-text').value;
+  // Check to make sure the place entered is not blank
+  if (address === '') {
+    window.alert('You must enter an address.');
+  } else {
+    hideLandmarks();
+    // Use the distance matrix service to calculate the duration of the routes between
+    // all our markers, and the destination address entered by the user. Then put
+    // all the origins into an origin matrix
+    var origins = [];
+    for (var i = 0; i < markers.length; i++) {
+      origins[i] = markers[i].position;
+    }
+    var destination = address;
+    var mode = document.getElementById('mode').value;
+    // Now that both origins and destination are defined, get all the
+    // info for the distances between them
+    distanceMatrixService.getDistanceMatrix({
+      origins: origins,
+      destinations: [destination],
+      travelMode: google.maps.TravelMode[mode],
+      unitSystem: google.maps.UnitSystem.IMPERIAL,
+    }, function(response, status) {
+      if (status !== google.maps.DistanceMatrixStatus.OK) {
+        window.alert('Error was: ' + status);
+      } else {
+        displayMarkersWithinTime(response);
+      }
+    })
+  }
+}
+
+// Go through each of the results from searchWithinTime() and if the distance
+// is less than the value in the picker, show it on the map
+function displayMarkersWithinTime(response) {
+  var maxDuration = document.getElementById('max-duration').value;
+  var origins = response.originAddresses;
+  var destinations = response.destinationAddresses;
+  // Parse through the results, and get the distance and duration of each
+  // Because there might be multiple origins and destinations we have a nested loop
+  // Then, make sure at least one result was found
+  var atleastOne = false;
+  for (var i = 0; i < origins.length; i++) {
+    var results = response.rows[i].elements;
+    for (var j = 0; j < results.length; j++) {
+      var element = results[j];
+      if (element.status === 'OK') {
+        // The distance returned is in feet, but the text is in miles. To switch
+        // the function to show markers within a user-entered distance, we would need
+        // the value for the distance, but for now we only need the text
+        var distanceText = element.distance.text;
+        // Convert distance duration value from seconds to minutes
+        // Get duration value and text
+        var duration = element.duration.value / 60;
+        var durationText = element.duration.text;
+        if (duration <= maxDuration) {
+          // The origin [i] should equal the markers[i]
+          markers[i].setMap(map);
+          atLeastOne = true;
+          // Create a mini infoWindow to open immediately & contain distance & duration
+          var infoWindow = new google.maps.InfoWindow({
+            content: durationText + ' away, ' + distanceText
+          });
+          infoWindow.open(map, markers[i]);
+          // Close small window if user clicks the marker, when big infoWindow opens
+          markers[i].infoWindow = infoWindow;
+          google.maps.event.addListener(markers[i], 'click', function() {
+            this.infoWindow.close();
+          });
+        }
+      }
+    }
+  }
 }

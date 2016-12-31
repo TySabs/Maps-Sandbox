@@ -73,3 +73,11 @@ h1 {
 #zoom-to-area {
   width: 24%;
 }
+
+#search-within-time-text {
+  width: 80%;
+}
+
+.travel-header {
+  font-size: 12px;
+}
