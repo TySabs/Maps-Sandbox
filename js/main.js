@@ -396,7 +396,7 @@ function displayMarkersWithinTime(response) {
   // Parse through the results, and get the distance and duration of each
   // Because there might be multiple origins and destinations we have a nested loop
   // Then, make sure at least one result was found
-  var atleastOne = false;
+  var atLeastOne = false;
   for (var i = 0; i < origins.length; i++) {
     var results = response.rows[i].elements;
     for (var j = 0; j < results.length; j++) {
@@ -416,7 +416,9 @@ function displayMarkersWithinTime(response) {
           atLeastOne = true;
           // Create a mini infoWindow to open immediately & contain distance & duration
           var infoWindow = new google.maps.InfoWindow({
-            content: durationText + ' away, ' + distanceText
+            content: durationText + ' away, ' + distanceText +
+            '<div><input type=\"button\" value=\"View Route\" onclick=' +
+            '\"displayDirections(&quot;' + origins[i] + '&quot;);\"></input></div>'
           });
           infoWindow.open(map, markers[i]);
           // Close small window if user clicks the marker, when big infoWindow opens
@@ -428,4 +430,37 @@ function displayMarkersWithinTime(response) {
       }
     }
   }
+  if (!atLeastOne) {
+    window.alert('We could not find any locations within that distance!');
+  }
+}
+
+// When user clicks show route on one for the markers, this function will display
+// the route on the map
+function displayDirections(origin) {
+  hideLandmarks();
+  var directionsService = new google.maps.DirectionsService;
+  // Get the destination address from the use entered value
+  var destinationAddress = document.getElementById('search-within-time-text').value;
+  var mode = document.getElementById('mode').value;
+  directionsService.route({
+    // The origin is the marker's position
+    origin: origin,
+    // The destination is the user's entered address
+    destination: destinationAddress,
+    travelMode: google.maps.TravelMode[mode]
+  }, function(response, status) {
+    if (status === google.maps.DirectionsStatus.OK) {
+      var directionsDisplay = new google.maps.DirectionsRenderer({
+        map: map,
+        directions: response,
+        draggable: true,
+        polylineOptions: {
+          strokeColor: 'green'
+        }
+      });
+    } else {
+      window.alert('Directions request failed due to' + status);
+    }
+  })
 }
