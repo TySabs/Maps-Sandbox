@@ -74,6 +74,7 @@ h1 {
   width: 24%;
 }
 
+#places-search,
 #search-within-time-text {
   width: 80%;
 }
@@ -81,4 +82,14 @@ h1 {
 .travel-header {
   font-size: 12px;
   line-height: 1em;
+}
+
+.travel-options {
+  display: inline;
+}
+
+#refresh {
+  width: 40%;
+  margin-left: 28%;
+  margin-right: 28%;
 }

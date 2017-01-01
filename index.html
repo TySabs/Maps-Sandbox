@@ -28,7 +28,7 @@
         </div>
         <hr>
         <h3 class="travel-header">Check travel times to landmarks from a specified address</h3>
-        <p class="text"> Within </p>
+        <p class="text travel-options"> Within </p>
         <select id="max-duration">
           <option value="10">10 min</option>
           <option value="15">15 min</option>
@@ -41,9 +41,17 @@
           <option value="BICYCLING">bike</option>
           <option value="TRANSIT">transit ride</option>
         </select>
-        <p class="text">of</p>
+        <p class="text travel-options">of</p>
         <input id="search-within-time-text" type="text" placeholder="Ex: Willis Tower Chicago">
         <input id="search-within-time" type="button" value="Go">
+        <hr>
+        <div> <!-- Beginning Searchbox Section -->
+          <p class="text">Search for nearby places</p>
+          <input id="places-search" type="text" placeholder="Ex: Music Venues in Chicago">
+          <input id="go-places" type="button" value="Go">
+        </div>
+        <hr>
+        <input id="refresh" type="button" value="Reset Map">
       </div>
 
     </div>
@@ -51,7 +59,7 @@
     <script src="js/main.js"></script>
 
     <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD12rqNI0xx-o1LXAxtJ-X-Es30h_oS6j4&v=3&libraries=drawing,geometry&callback=initMap">
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD12rqNI0xx-o1LXAxtJ-X-Es30h_oS6j4&v=3&libraries=places,drawing,geometry&callback=initMap">
     </script>
 
   </body>

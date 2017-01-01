@@ -4,6 +4,10 @@ var markers = [];
 // Initialize polygon to be used by drawingManager
 var polygon = null;
 
+// Create placemarkers array to use in multiple functions
+// to have control over the number of places that show
+var placeMarkers = [];
+
 function initMap() {
   /* Pale Dawn Styles url: https://snazzymaps.com/style/1/pale-dawn */
   var paleDawnStyles = [
@@ -107,6 +111,21 @@ function initMap() {
     mapTypeControl: false
   });
 
+  // This autocomplete is for use in the search within time entry box
+  var timeAutocomplete = new google.maps.places.Autocomplete(
+    document.getElementById('search-within-time-text'));
+
+  // This autocomplete is for use in the geocoder entry box
+  var zoomAutocomplete = new google.maps.places.Autocomplete(
+    document.getElementById('zoom-to-area-text'));
+  zoomAutocomplete.bindTo('bounds', map);
+
+  // Create a searchbox in order to execute a places search
+  var searchBox = new google.maps.places.SearchBox(
+    document.getElementById('places-search'));
+  // Bias the searchbox to within the bounds of the map
+  searchBox.setBounds(map.getBounds());
+
   // landmarks holds the music venue locations for all our markers
   var landmarks = [
     {title: 'Cloud Gate (The Bean)', location: {lat: 41.8827, lng: -87.6233}},
@@ -179,7 +198,7 @@ function initMap() {
   }
   // Create click events to hide/show landmarks
   document.getElementById('show-landmarks').addEventListener('click', showLandmarks);
-  document.getElementById('hide-landmarks').addEventListener('click', hideLandmarks);
+  document.getElementById('hide-landmarks').addEventListener('click', hideMarkers);
 
   // Create click event to turn on drawing tools
   document.getElementById('toggle-drawing').addEventListener('click', function() {
@@ -194,12 +213,25 @@ function initMap() {
     searchWithinTime();
   });
 
+  // Listen for event fired when user selects a prediction from the picklist
+  // and retrieve more details for that place
+  searchBox.addListener('places_changed', function() {
+    searchBoxPlaces(this);
+  });
+
+  // Listen for the event fired when the user selects a prediction and when user clicks
+  // "Go" give more details for that place
+  document.getElementById('go-places').addEventListener('click', textSearchPlaces);
+
+
+  document.getElementById('refresh').addEventListener('click', refreshPage);
+
   drawingManager.addListener('overlaycomplete', function(event) {
     // First, check if there is an existing polygon
     // If there is, get rid of it and remove the markers
     if (polygon) {
       polygon.setMap(null);
-      hideLandmarks();
+      hideMarkers();
     }
     // Turn off drawing mode
     drawingManager.setDrawingMode(null);
@@ -280,7 +312,7 @@ function showLandmarks() {
 }
 
 // Hide all the listings
-function hideLandmarks() {
+function hideMarkers() {
   for (var i = 0; i < markers.length; i++) {
     markers[i].setMap(null);
   }
@@ -360,7 +392,7 @@ function searchWithinTime() {
   if (address === '') {
     window.alert('You must enter an address.');
   } else {
-    hideLandmarks();
+    hideMarkers();
     // Use the distance matrix service to calculate the duration of the routes between
     // all our markers, and the destination address entered by the user. Then put
     // all the origins into an origin matrix
@@ -438,7 +470,7 @@ function displayMarkersWithinTime(response) {
 // When user clicks show route on one for the markers, this function will display
 // the route on the map
 function displayDirections(origin) {
-  hideLandmarks();
+  hideMarkers();
   var directionsService = new google.maps.DirectionsService;
   // Get the destination address from the use entered value
   var destinationAddress = document.getElementById('search-within-time-text').value;
@@ -463,4 +495,122 @@ function displayDirections(origin) {
       window.alert('Directions request failed due to' + status);
     }
   })
+}
+
+// Called when the user selects a searchbox picklist item
+// It will do a nearby search using the selected query string or place
+function searchBoxPlaces(searchBox) {
+  hideMarkers(placeMarkers);
+  var places = searchBox.getPlaces();
+  // For each place, get the icon, name and location
+  createMarkersForPlaces(places);
+  if (places.length == 0) {
+    window.alert('We did not find any places match that search!');
+  }
+}
+
+// Fires when the user selects "Go" on the places search
+// It will do a nearby search using the entered query string or place
+function textSearchPlaces() {
+  var bounds = map.getBounds();
+  hideMarkers(placeMarkers);
+  var placesService = new google.maps.places.PlacesService(map);
+  placesService.textSearch({
+    query: document.getElementById('places-search').value,
+    bounds: bounds
+  }, function(results, status) {
+    if (status === google.maps.places.PlacesServiceStatus.OK) {
+      createMarkersForPlaces(results);
+    }
+  });
+}
+
+// This function creates markers for each place found in either places search
+function createMarkersForPlaces(places) {
+  var bounds = new google.maps.LatLngBounds();
+  for (var i = 0; i < places.length; i++) {
+    var place = places[i];
+    var icon = {
+      url: place.icon,
+      size: new google.maps.Size(35, 35),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(15, 34),
+      scaledSize: new google.maps.Size(25, 25)
+    };
+    // Create a marker for each place
+    var marker = new google.maps.Marker({
+      map: map,
+      icon: icon,
+      title: place.name,
+      position: place.geometry.location,
+      id: place.place_id
+    });
+    // Create a single infoWindow to be used with the place details information
+    // so that only one is open at once
+    var placeInfoWindow = new google.maps.InfoWindow();
+    // If a marker is clicked, do a place details search on it in the next function
+    marker.addListener('click', function() {
+      if (placeInfoWindow.marker == this) {
+        console.log("This infoWindow already is on this marker!");
+      } else {
+        getPlaceDetails(this, placeInfoWindow);
+      }
+    });
+    placeMarkers.push(marker);
+    if (place.geometry.viewport) {
+      // Only geocodes have viewport.
+      bounds.union(place.geometry.viewport);
+    } else {
+      bounds.extend(place.geometry.location);
+    }
+  }
+  map.fitBounds(bounds);
+}
+// PLACE DETAILS is only executed when a marker is selected,
+// indicating the user wants more details about that place
+function getPlaceDetails(marker, infoWindow) {
+  var service = new google.maps.places.PlacesService(map);
+  service.getDetails({
+    placeId: marker.id
+  }, function(place, status) {
+    if (status === google.maps.places.PlacesServiceStatus.OK) {
+      // Set the marker property on this infoWindow so it isn't created again
+      infoWindow.marker = marker;
+      var innerHTML = '<div>';
+      if (place.name) {
+        innerHTML += '<strong>' + place.name + '</strong>';
+      }
+      if (place.formatted_address) {
+        innerHTML += '<br>' + place.formatted_address;
+      }
+      if (place.formatted_phone_number) {
+        innerHTML += '<br>' + place.formatted_phone_number;
+      }
+      if (place.opening_hours) {
+        innerHTML += '<br><br><strong>Hours:</strong><br>' +
+          place.opening_hours.weekday_text[0] + '<br>' +
+          place.opening_hours.weekday_text[1] + '<br>' +
+          place.opening_hours.weekday_text[2] + '<br>' +
+          place.opening_hours.weekday_text[3] + '<br>' +
+          place.opening_hours.weekday_text[4] + '<br>' +
+          place.opening_hours.weekday_text[5] + '<br>' +
+          place.opening_hours.weekday_text[6];
+        }
+      if (place.photos) {
+        innerHTML += '<br><br><img src="' + place.photos[0].getUrl(
+          {maxHeight: 100, maxWidth: 200}) + '">';
+        }
+      innerHTML += '</div>';
+      infoWindow.setContent(innerHTML);
+      infoWindow.open(map, marker);
+      // Make sure the marker property is cleared if the infoWindow is closed
+      infoWindow.addListener('closeclick', function() {
+      infoWindow.marker = null;
+      });
+    }
+  });
+}
+
+function refreshPage() {
+  window.location.reload();
 }
